@@ -35,7 +35,7 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
   - Preencher `app/ROTAS.md` com as rotas reais de login, listagem, compra na loja e envio de atividade.
 - **Como testar:** subir a aplicação e o banco localmente e validar que as rotas respondem conforme documentado em `app/ROTAS.md`.
 
-### Membro 2 — Infraestrutura e Monitoramento (`docker-compose.yml`, `prometheus/`, `grafana/provisioning/` | branch `feat/monitoramento`)
+### Membro 2 (Gustavo) — Infraestrutura e Monitoramento (`docker-compose.yml`, `prometheus/`, `grafana/provisioning/` | branch `feat/monitoramento`)
 - **O que vai fazer:** manter a orquestração dos containers, configurar a coleta no Prometheus e montar os painéis no Grafana.
 - **Entregas:**
   - Validar `docker-compose.yml` (rede `monitoring-net`, volumes `db_data`, `prometheus_data`, `grafana_data` e dependências). Quando `app/Dockerfile` estiver pronto, substituir `httpbin` por `build: ./app`, ajustar a porta para `8000:8000` e atualizar o `--host` do Locust para `http://app:8000`.
