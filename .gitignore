@@ -1,0 +1,38 @@
+# Variáveis de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Volumes e dados locais de monitoramento/banco
+prometheus_data/
+grafana_data/
+db_data/
+*.sqlite3
+*.db
+
+# Python / Locust
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# LaTeX (arquivos auxiliares de compilação)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
