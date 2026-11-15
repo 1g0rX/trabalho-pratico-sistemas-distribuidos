@@ -1,0 +1,154 @@
+% Modelo Oficial IEEE Conference Template (IEEEtran — padrão Overleaf/CTAN)
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Observabilidade e Monitoramento de Recursos do Sistema Operacional com Containers\\
+{\footnotesize \textsuperscript{*}Trabalho Prático — Sistemas Operacionais Modernos (Prática 2)}
+}
+
+\author{
+\IEEEauthorblockN{Lívia}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+\and
+\IEEEauthorblockN{Nome do Membro 2}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+\and
+\IEEEauthorblockN{Nome do Membro 3}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+\and
+\IEEEauthorblockN{Nome do Membro 4}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+\and
+\IEEEauthorblockN{Nome do Membro 5}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+\and
+\IEEEauthorblockN{Nome do Membro 6}
+\IEEEauthorblockA{\textit{Dep. de Computação (DECOM)} \\
+\textit{CEFET-MG}\\
+Belo Horizonte, Brasil}
+}
+
+\maketitle
+
+\begin{abstract}
+Este relatório técnico apresenta a implantação e validação experimental de uma arquitetura de observabilidade e monitoramento de recursos do Sistema Operacional (SO) e de containers utilizando Docker Compose, Prometheus, Grafana, cAdvisor e Node Exporter. Como sistema alvo, utilizou-se uma réplica local isolada (fora do ambiente de produção) de um sistema de gestão educacional, submetido a testes de estresse via Locust (Python) com usuários simultâneos, compras concorrentes na loja e envios simultâneos de atividades com entradas de tamanhos variados. Os resultados demonstram em tempo real a reação das métricas de CPU, memória RAM, I/O de disco e tráfego de rede sob contenção de recursos do SO.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Observabilidade, Monitoramento, Containers, Docker Compose, Prometheus, Grafana, Contenção de Recursos.
+\end{IEEEkeywords}
+
+% ==============================================================================
+\section{Introdução}
+% ==============================================================================
+Em ambientes de produção baseados em microsserviços e containers, identificar gargalos e sobrecargas de infraestrutura é essencial para manter a disponibilidade e o desempenho das aplicações. O monitoramento contínuo permite observar o comportamento de CPU, memória RAM, operações de entrada/saída (I/O) de disco e tráfego de rede tanto do sistema operacional hospedeiro quanto de cada container isolado.
+
+Neste trabalho (Prática 2 — Observabilidade e Monitoramento de Recursos do SO), avaliamos uma réplica local isolada de um sistema de gestão educacional, garantindo a não interferência no ambiente de produção. A aplicação é submetida a cenários progressivos de estresse por meio de usuários simultâneos, compras concorrentes na loja e envio simultâneo de atividades com entradas de tamanhos variados.
+
+% ==============================================================================
+\section{Mapeamento da Solução e Arquitetura}
+% ==============================================================================
+Toda a infraestrutura foi orquestrada via \texttt{docker-compose.yml} utilizando uma rede bridge isolada (\texttt{monitoring-net}) e volumes persistentes para garantir a integridade dos dados e das métricas coletadas:
+
+\begin{itemize}
+    \item \textbf{Containers:} \texttt{app} (porta 8000), \texttt{db} (porta 5432), \texttt{cadvisor} (porta 8080), \texttt{node-exporter} (porta 9100), \texttt{prometheus} (porta 9090), \texttt{grafana} (porta 3000) e \texttt{locust} (porta 8089).
+    \item \textbf{Redes (\textit{Networks}):} \texttt{monitoring-net} (\textit{driver bridge}), permitindo a resolução de nomes interna entre os serviços.
+    \item \textbf{Armazenamento (\textit{Volumes}):} \texttt{db\_data} (persistência do banco de dados de teste), \texttt{prometheus\_data} (séries temporais) e \texttt{grafana\_data} (estado e painéis do Grafana).
+\end{itemize}
+
+% Descomentar após inserir a imagem do diagrama em relatorio/imagens/arquitetura.png
+% \begin{figure}[htbp]
+% \centerline{\includegraphics[width=\columnwidth]{imagens/arquitetura.png}}
+% \caption{Diagrama arquitetural dos containers, rede \texttt{monitoring-net} e volumes.}
+% \label{fig:arquitetura}
+% \end{figure}
+
+% ==============================================================================
+\section{Tecnologias Utilizadas}
+% ==============================================================================
+Cada componente do ecossistema desempenha um papel específico na arquitetura de observabilidade e testes:
+
+\begin{itemize}
+    \item \textbf{Docker e Docker Compose:} orquestração declarativa dos serviços, redes virtuais e volumes persistentes.
+    \item \textbf{Aplicação Educacional e PostgreSQL:} sistema alvo executado localmente com dados fictícios (\textit{seed}) para isolamento completo da produção.
+    \item \textbf{cAdvisor:} coletor de métricas de uso de recursos (CPU, memória, rede e I/O) em nível de container.
+    \item \textbf{Node Exporter:} agente responsável por expor métricas de hardware e kernel do Sistema Operacional hospedeiro.
+    \item \textbf{Prometheus:} banco de dados de séries temporais configurado com \textit{scrape\_interval} de 5 segundos para coleta junto aos agentes.
+    \item \textbf{Grafana:} plataforma de visualização gráfica com \textit{provisioning} automático de \textit{datasource} e dashboards em tempo real.
+    \item \textbf{Locust (Python):} ferramenta containerizada (\texttt{locustio/locust}) para simulação de usuários virtuais concorrentes e envio de payloads variados.
+\end{itemize}
+
+% ==============================================================================
+\section{Execução e Validação Experimental}
+% ==============================================================================
+Nesta seção são apresentados os procedimentos de validação executados e as evidências coletadas em tempo real no Grafana e nos logs do terminal.
+
+\subsection{Estado Base (Sistema Ocioso)}
+Antes da injeção de carga, o painel do Grafana foi observado em estado ocioso para estabelecer a linha de base (\textit{baseline}) de consumo de CPU, memória RAM, I/O de disco e rede.
+
+\subsection{Cenário 1: Usuários Simultâneos e Compras na Loja}
+Foram disparadas requisições concorrentes simulando aumento progressivo de alunos (ex.: 10, 50 e 200 usuários simultâneos) realizando login, navegação e compras na loja, evidenciando o aumento de utilização de CPU e contenção no acesso ao banco de dados.
+
+\subsection{Cenário 2: Envio Simultâneo de Atividades com Entradas Variadas}
+Foram executados envios simultâneos de atividades variando o tamanho da entrada entre pequeno (\textasciitilde 1~KB), médio (\textasciitilde 100~KB) e grande (\textasciitilde 5~MB), permitindo observar o impacto direto sobre consumo de memória RAM, tráfego de rede e operações de I/O de disco.
+
+\subsection{Análise de Contenção de Recursos do SO}
+Os picos registrados nos gráficos do Grafana refletem diretamente os mecanismos de contenção de recursos do Sistema Operacional: disputa por tempo de CPU entre processos/containers, pressão na alocação de memória, enfileiramento de operações de I/O em disco e saturação da interface de rede virtual.
+
+% ==============================================================================
+\section{Conclusão}
+% ==============================================================================
+A implementação da pilha de observabilidade permitiu compreender na prática como containers compartilham os recursos do sistema operacional hospedeiro e como ferramentas como Prometheus e Grafana possibilitam diagnosticar gargalos em tempo real diante de diferentes perfis de carga.
+
+% ==============================================================================
+\section{Repositório}
+% ==============================================================================
+Os manifestos de orquestração (\texttt{docker-compose.yml}), configurações do Prometheus e Grafana, scripts de teste de carga em Python (Locust) e o código-fonte deste relatório estão disponíveis no repositório oficial do grupo:
+
+\begin{itemize}
+    \item \textbf{GitHub:} \url{https://github.com/1g0rX/trabalho-pratico-sistemas-distribuidos}
+\end{itemize}
+
+\begin{thebibliography}{00}
+\bibitem{prometheus} Prometheus Authors, ``Prometheus Documentation,'' \url{https://prometheus.io/docs/}, 2026.
+\bibitem{grafana} Grafana Labs, ``Grafana Documentation,'' \url{https://grafana.com/docs/}, 2026.
+\bibitem{cadvisor} Google, ``cAdvisor (Container Advisor),'' \url{https://github.com/google/cadvisor}, 2026.
+\bibitem{locust} Locust Authors, ``Locust — An open source load testing tool,'' \url{https://docs.locust.io/}, 2026.
+\end{thebibliography}
+
+\end{document}

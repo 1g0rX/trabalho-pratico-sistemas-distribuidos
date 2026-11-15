@@ -1,0 +1,135 @@
+services:
+  # ============================================================================
+  # 1. APLICAÇÃO ALVO (Membro 1)
+  # Placeholder temporário com httpbin para testes isolados.
+  # Quando ./app/Dockerfile estiver pronto, comente "image:" e descomente "build:"
+  # e ajuste a porta para "8000:8000" (além do --host=http://app:8000 no Locust).
+  # ============================================================================
+  app:
+    image: kennethreitz/httpbin
+    # build: ./app
+    container_name: app-educacional
+    ports:
+      - "8000:80"
+      # - "8000:8000"
+    # env_file:
+    #   - .env
+    depends_on:
+      - db
+    networks:
+      - monitoring-net
+
+  # ============================================================================
+  # 2. BANCO DE DADOS DE TESTE (Membro 1)
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: db-educacional
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-educacional}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-educacional123}
+      POSTGRES_DB: ${POSTGRES_DB:-educacional_test}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - monitoring-net
+
+  # ============================================================================
+  # 3. COLETORES DE MÉTRICAS (Membro 2)
+  # ============================================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring-net
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring-net
+
+  # ============================================================================
+  # 4. PROMETHEUS (Membro 2)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - cadvisor
+      - node-exporter
+    networks:
+      - monitoring-net
+
+  # ============================================================================
+  # 5. GRAFANA (Membro 2)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-net
+
+  # ============================================================================
+  # 6. TESTES DE CARGA EM PYTHON — LOCUST (Membros 3 e 4)
+  # Para rodar o cenário de atividades: troque -f para /mnt/locust/locust_atividades.py
+  # Quando a app real substituir o httpbin, troque --host para http://app:8000
+  # ============================================================================
+  locust:
+    image: locustio/locust:latest
+    container_name: locust-load-test
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./load-tests:/mnt/locust:ro
+    command: -f /mnt/locust/locust_alunos.py --host=http://app:80
+    depends_on:
+      - app
+    networks:
+      - monitoring-net
+
+networks:
+  monitoring-net:
+    driver: bridge
+
+volumes:
+  db_data:
+  prometheus_data:
+  grafana_data:
