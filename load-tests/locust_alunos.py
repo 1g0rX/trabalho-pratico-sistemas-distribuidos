@@ -1,64 +1,72 @@
-"""Cenário de alunos simultâneos consultando dados e realizando compras."""
+"""Cenário de alunos simultâneos consultando dados e solicitando produtos."""
 
-from locust import HttpUser, task, between
+import random
+
+from locust import HttpUser, between, task
 
 
 class AlunoUsuario(HttpUser):
-    # Tempo de espera simulado entre ações de um mesmo usuário (em segundos)
     wait_time = between(0.5, 2.0)
 
     def on_start(self):
-        """Autentica cada usuário virtual com a conta fictícia do ambiente de teste."""
+        """Abre uma sessão real usando apenas a conta fictícia do ambiente local."""
+        self.csrf_token = ""
+        self.product_ids = []
         with self.client.post(
-            "/api/login",
+            "/api/index.php?route=auth/login",
             json={
-                "email": "aluno.teste@createjoy.test",
-                "password": "Create123",
+                "email": "aluno.demo@createjoy.local",
+                "password": "Admin@123",
+                "role": "student",
             },
-            name="POST /api/login",
+            name="POST auth/login",
             catch_response=True,
         ) as response:
             if response.status_code != 200:
                 response.failure(f"Falha no login: HTTP {response.status_code}")
-                self.headers = {}
                 return
+            payload = response.json()
+            self.csrf_token = payload.get("csrfToken", "")
+            self.product_ids = [
+                product["id"]
+                for product in payload.get("data", {}).get("storeProducts", [])
+            ]
+            if not self.csrf_token:
+                response.failure("Token CSRF ausente no login")
 
-            token = response.json().get("token")
-            if not token:
-                response.failure("Token ausente na resposta de login")
-                self.headers = {}
-                return
-
-            self.headers = {"Authorization": f"Bearer {token}"}
-
-    @task(3)
-    def listar_recursos_aluno(self):
-        """Simula alunos consultando páginas/listagens (maior frequência)."""
+    @task(4)
+    def carregar_painel(self):
+        """Atualiza dashboard, missões, atividades e demais dados do aluno."""
         self.client.get(
-            "/api/alunos/dashboard",
-            headers=self.headers,
-            name="GET /api/alunos/dashboard",
+            "/api/index.php?route=bootstrap",
+            name="GET bootstrap do aluno",
         )
 
-    @task(2)
-    def listar_produtos(self):
-        """Simula a abertura da loja pelos alunos."""
+    @task(3)
+    def abrir_loja(self):
+        """A listagem da loja faz parte do mesmo bootstrap autenticado."""
         self.client.get(
-            "/api/loja/produtos",
-            headers=self.headers,
-            name="GET /api/loja/produtos",
+            "/api/index.php?route=bootstrap",
+            name="GET catálogo da CreateStore",
         )
 
     @task(1)
-    def realizar_compra_loja(self):
-        """Simula compras simultâneas na loja (concorrência no banco de dados)."""
-        payload = {
-            "produto_id": 1,
-            "quantidade": 1,
-        }
-        self.client.post(
-            "/api/loja/comprar",
-            json=payload,
-            headers=self.headers,
-            name="POST /api/loja/comprar",
-        )
+    def solicitar_produto(self):
+        """Exercita a concorrência das solicitações sem descontar Joys na criação."""
+        if not self.csrf_token or not self.product_ids:
+            return
+        product_id = random.choice(self.product_ids)
+        with self.client.post(
+            "/api/index.php?route=store/request/create",
+            json={
+                "product_id": product_id,
+                "details": "Solicitação fictícia gerada pelo teste de carga.",
+            },
+            headers={"X-CSRF-Token": self.csrf_token},
+            name="POST solicitação da CreateStore",
+            catch_response=True,
+        ) as response:
+            if response.status_code in (200, 201, 409):
+                response.success()
+            else:
+                response.failure(f"Falha na solicitação: HTTP {response.status_code}")

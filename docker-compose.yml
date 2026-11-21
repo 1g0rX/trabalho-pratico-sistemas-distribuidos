@@ -5,19 +5,18 @@ services:
     container_name: app-educacional
     restart: unless-stopped
     environment:
-      PORT: 8000
-      DB_HOST: db
-      DB_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-educacional}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-educacional123}
-      POSTGRES_DB: ${POSTGRES_DB:-educacional_test}
+      CREATEJOY_DB_HOST: db
+      CREATEJOY_DB_PORT: 3306
+      CREATEJOY_DB_USER: ${MARIADB_USER:-createjoy}
+      CREATEJOY_DB_PASSWORD: ${MARIADB_PASSWORD:-createjoy123}
+      CREATEJOY_DB_NAME: ${MARIADB_DATABASE:-createjoy_demo}
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      test: ["CMD-SHELL", "curl --fail --silent 'http://127.0.0.1:8000/api/index.php?route=health' >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -26,20 +25,25 @@ services:
       - monitoring-net
 
   db:
-    image: postgres:16-alpine
+    image: mariadb:11.4
     container_name: db-educacional
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-educacional}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-educacional123}
-      POSTGRES_DB: ${POSTGRES_DB:-educacional_test}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-createjoy_demo}
+      MARIADB_USER: ${MARIADB_USER:-createjoy}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-createjoy123}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-createjoy-root-123}
     ports:
-      - "5432:5432"
+      - "5432:3306"
     volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./app/db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+      - db_data:/var/lib/mysql
+      - ./app/database/createjoy.sql:/docker-entrypoint-initdb.d/001-createjoy.sql:ro
+      - ./app/database/migrations/2026-11-03-rematricula.sql:/docker-entrypoint-initdb.d/002-rematricula.sql:ro
+      - ./app/database/migrations/2026-11-04-rematricula-taxa-matricula.sql:/docker-entrypoint-initdb.d/003-taxa-matricula.sql:ro
+      - ./app/database/migrations/2026-11-09-access-profiles.sql:/docker-entrypoint-initdb.d/004-perfis-acesso.sql:ro
+      - ./app/database/seed-demo.sql:/docker-entrypoint-initdb.d/005-dados-ficticios.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u$${MARIADB_USER} -p$${MARIADB_PASSWORD} --silent"]
       interval: 5s
       timeout: 5s
       retries: 15

@@ -54,22 +54,22 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 2, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.25 }, { "color": "red", "value": 1 }] }, "unit": "reqps" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }, "unit": "none" }, "overrides": [] },
       "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
       "id": 3,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "editorMode": "code", "expr": "sum(rate(createjoy_http_request_duration_seconds_count[1m]))", "legendFormat": "Requisições/s", "range": true, "refId": "A" }],
-      "title": "Taxa de requisições",
+      "targets": [{ "editorMode": "code", "expr": "createjoy_up", "legendFormat": "1 = disponível", "range": true, "refId": "A" }],
+      "title": "Aplicação disponível",
       "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 3, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.5 }, { "color": "red", "value": 1 }] }, "unit": "s" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] }, "unit": "short" }, "overrides": [] },
       "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
       "id": 4,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (rate(createjoy_http_request_duration_seconds_bucket[1m])))", "legendFormat": "p95", "range": true, "refId": "A" }],
-      "title": "Latência HTTP p95",
+      "targets": [{ "editorMode": "code", "expr": "createjoy_pending_submissions", "legendFormat": "Entregas", "range": true, "refId": "A" }],
+      "title": "Entregas pendentes",
       "type": "stat"
     },
     {

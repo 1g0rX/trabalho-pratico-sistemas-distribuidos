@@ -13,8 +13,8 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
 
 - **Rede Docker:** `monitoring-net`
 - **Serviços e Portas:**
-  - `app` (aplicação local): `8000` *(atualmente utilizando `httpbin` como placeholder para testes iniciais)*
-  - `db` (PostgreSQL): `5432`
+  - `app` (sistema CreateJoy completo em PHP/Apache): `8000`
+  - `db` (MariaDB compatível com o MySQL da HostGator): `5432` no computador, `3306` na rede Docker
   - `cadvisor` (métricas por container): `8080`
   - `node-exporter` (métricas do SO hospedeiro): `9100`
   - `prometheus` (coleta e armazenamento de métricas): `9090`
@@ -81,11 +81,20 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
    ```
 
 3. **Acessar as interfaces:**
+   - **CreateJoy completo:** `http://localhost:8000`
    - **Prometheus (Targets):** `http://localhost:9090/targets`
    - **Grafana (Dashboards):** `http://localhost:3000` (usuário `admin` / senha `admin`)
    - **Locust (Testes de carga):** `http://localhost:8089`
 
-4. **Alternar o Locust para o cenário de atividades (`locust_atividades.py`):**
+4. **Entrar com dados fictícios:**
+   - Aluno: `aluno.demo@createjoy.local`
+   - Professor: `professor.demo@createjoy.local`
+   - Supervisão: `supervisao.demo@createjoy.local`
+   - Senha comum: `Admin@123`
+
+   As demais contas de demonstração estão documentadas em `app/ROTAS.md`.
+
+5. **Alternar o Locust para o cenário de atividades (`locust_atividades.py`):**
    No `docker-compose.yml`, altere a linha `command:` do serviço `locust` para:
    ```yaml
    command: -f /mnt/locust/locust_atividades.py --host=http://app:8000
@@ -95,10 +104,13 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
    docker compose up -d --force-recreate locust
    ```
 
-5. **Encerrar os containers:**
+6. **Encerrar os containers:**
    ```bash
    docker compose down
    ```
+
+O banco local contém somente dados fictícios. Nenhuma credencial, foto, upload
+ou cadastro da instalação hospedada é incluído no repositório.
 
 ---
 
