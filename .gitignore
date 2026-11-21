@@ -17,6 +17,8 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+node_modules/
+npm-debug.log*
 
 # LaTeX (arquivos auxiliares de compilação)
 *.aux

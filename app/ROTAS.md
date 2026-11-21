@@ -1,37 +1,38 @@
-# Contrato de Rotas da Aplicação (Membro 1)
+# Contrato de Rotas da Aplicação
 
-Preencha este arquivo com as rotas reais da cópia local do sistema de gestão educacional para que os Membros 3 e 4 ajustem os scripts do Locust sem depender de reuniões.
+Rotas da cópia local isolada da CreateJoy. O banco contém somente dados fictícios e pode ser recriado removendo o volume `db_data`.
 
 ## Informações Gerais
 - **Porta interna do container `app`:** `8000` (se diferente, avisar o Membro 2 e o grupo)
-- **Autenticação:** (ex: Bearer Token JWT / Cookie de sessão / Sem auth em rota de teste)
+- **Autenticação:** token Bearer retornado pela rota de login, válido por 12 horas.
 - **Usuário de teste (seed):**
-  - E-mail/Login: `aluno.teste@cefetmg.br`
-  - Senha: `123456`
+  - E-mail/Login: `aluno.teste@createjoy.test`
+  - Senha: `Create123`
 
 ---
 
 ## 1. Login / Autenticação
-- **Método e Rota:** `POST /api/login` *(substituir pela rota real)*
+- **Método e Rota:** `POST /api/login`
 - **Payload (JSON):**
   ```json
   {
-    "email": "aluno.teste@cefetmg.br",
-    "password": "123456"
+    "email": "aluno.teste@createjoy.test",
+    "password": "Create123"
   }
   ```
-- **Resposta esperada:** `200 OK` (ex: retorna `token` ou seta cookie)
+- **Resposta esperada:** `200 OK`, com `token` e os dados do usuário.
+- **Cabeçalho nas próximas rotas:** `Authorization: Bearer <token>`.
 
 ---
 
 ## 2. Requisições de Alunos (Leitura / Navegação)
-- **Método e Rota:** `GET /api/alunos/dashboard` *(substituir pela rota real)*
+- **Método e Rota:** `GET /api/alunos/dashboard`
 - **Outras rotas de listagem:** `GET /api/loja/produtos`, `GET /api/atividades`
 
 ---
 
 ## 3. Compras Simultâneas na Loja
-- **Método e Rota:** `POST /api/loja/comprar` *(substituir pela rota real)*
+- **Método e Rota:** `POST /api/loja/comprar`
 - **Payload (JSON):**
   ```json
   {
@@ -43,8 +44,8 @@ Preencha este arquivo com as rotas reais da cópia local do sistema de gestão e
 ---
 
 ## 4. Envio Simultâneo de Atividades
-- **Método e Rota:** `POST /api/atividades/enviar` *(substituir pela rota real)*
-- **Tipo de conteúdo:** `application/json` ou `multipart/form-data`
+- **Método e Rota:** `POST /api/atividades/enviar`
+- **Tipo de conteúdo:** `application/json` com limite de 6 MB.
 - **Payload (JSON):**
   ```json
   {
@@ -52,3 +53,9 @@ Preencha este arquivo com as rotas reais da cópia local do sistema de gestão e
     "conteudo": "texto ou base64 de tamanho variável"
   }
   ```
+
+---
+
+## 5. Saúde e métricas
+- `GET /health`: verifica a aplicação e a conexão com o PostgreSQL.
+- `GET /metrics`: expõe métricas no formato Prometheus.
