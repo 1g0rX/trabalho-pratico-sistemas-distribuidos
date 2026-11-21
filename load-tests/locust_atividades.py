@@ -93,7 +93,9 @@ class EnvioAtividadeUsuario(HttpUser):
                     missoes = [
                         m["id"]
                         for m in payload.get("data", {}).get("missions", [])
-                        if m.get("status") == "active"
+                        if m.get("status") in ("ativa", "active")
+                        and not m.get("bloqueada", False)
+                        and not m.get("concluida", False)
                         and m.get("progress_status") not in ("blocked", "approved")
                     ]
                     if missoes:
