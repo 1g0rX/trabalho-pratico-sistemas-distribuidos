@@ -7,6 +7,6 @@ DirectoryIndex index.html
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-<FilesMatch "\.(sql|log|ini)$">
+<FilesMatch "\.(sql|log|ini|ya?ml)$">
     Require all denied
 </FilesMatch>

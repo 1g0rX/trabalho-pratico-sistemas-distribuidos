@@ -8,6 +8,38 @@ Sistema web da CreateJoy para gestão de alunos, turmas, missões, Joys, loja, i
 - MySQL 5.7 ou superior
 - Servidor Apache com `mod_rewrite`
 
+## Executar esta branch isoladamente com Docker
+
+A branch `feat/app` possui um Compose próprio em `app/compose.yml`. Ele inicia
+somente a aplicação e um MariaDB local com dados fictícios, sem depender do
+`docker-compose.yml` da raiz, que pertence à integração de monitoramento.
+
+Na pasta `app`, execute:
+
+```powershell
+docker compose up -d --build
+docker compose ps
+```
+
+A aplicação estará em <http://localhost:8000>. A API de saúde pode ser conferida
+em <http://localhost:8000/api/index.php?route=health>.
+
+Contas fictícias para validação:
+
+- aluno: `aluno.demo@createjoy.local`;
+- professor: `professor.demo@createjoy.local`;
+- supervisão: `supervisao.demo@createjoy.local`;
+- senha comum: `Admin@123`.
+
+Para encerrar preservando o banco local:
+
+```powershell
+docker compose down
+```
+
+Use `docker compose down -v` somente quando quiser apagar e recriar todo o banco
+fictício. Nenhuma dessas operações acessa ou altera a instalação da HostGator.
+
 ## Instalação limpa
 
 1. Crie um banco de dados MySQL vazio.

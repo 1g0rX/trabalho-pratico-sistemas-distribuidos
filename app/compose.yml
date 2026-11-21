@@ -1,0 +1,50 @@
+name: createjoy-app-local
+
+services:
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      CREATEJOY_DB_HOST: db
+      CREATEJOY_DB_PORT: 3306
+      CREATEJOY_DB_USER: ${CREATEJOY_DEMO_DB_USER:-createjoy}
+      CREATEJOY_DB_PASSWORD: ${CREATEJOY_DEMO_DB_PASSWORD:-createjoy123}
+      CREATEJOY_DB_NAME: ${CREATEJOY_DEMO_DB_NAME:-createjoy_demo}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent 'http://127.0.0.1:8000/api/index.php?route=health' >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${CREATEJOY_DEMO_DB_NAME:-createjoy_demo}
+      MARIADB_USER: ${CREATEJOY_DEMO_DB_USER:-createjoy}
+      MARIADB_PASSWORD: ${CREATEJOY_DEMO_DB_PASSWORD:-createjoy123}
+      MARIADB_ROOT_PASSWORD: ${CREATEJOY_DEMO_DB_ROOT_PASSWORD:-createjoy-root-123}
+    ports:
+      - "5432:3306"
+    volumes:
+      - createjoy_app_db_data:/var/lib/mysql
+      - ./database/createjoy.sql:/docker-entrypoint-initdb.d/001-createjoy.sql:ro
+      - ./database/migrations/2026-11-03-rematricula.sql:/docker-entrypoint-initdb.d/002-rematricula.sql:ro
+      - ./database/migrations/2026-11-04-rematricula-taxa-matricula.sql:/docker-entrypoint-initdb.d/003-taxa-matricula.sql:ro
+      - ./database/migrations/2026-11-09-access-profiles.sql:/docker-entrypoint-initdb.d/004-perfis-acesso.sql:ro
+      - ./database/seed-demo.sql:/docker-entrypoint-initdb.d/005-dados-ficticios.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u$${MARIADB_USER} -p$${MARIADB_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  createjoy_app_db_data:
