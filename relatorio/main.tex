@@ -86,7 +86,7 @@ Neste trabalho (Prática 2 — Observabilidade e Monitoramento de Recursos do SO
 Toda a infraestrutura foi orquestrada via \texttt{docker-compose.yml} utilizando uma rede bridge isolada (\texttt{monitoring-net}) e volumes persistentes para garantir a integridade dos dados e das métricas coletadas:
 
 \begin{itemize}
-    \item \textbf{Containers:} \texttt{app} (porta 8000), \texttt{db} (porta 5432), \texttt{cadvisor} (porta 8080), \texttt{node-exporter} (porta 9100), \texttt{prometheus} (porta 9090), \texttt{grafana} (porta 3000) e \texttt{locust} (porta 8089).
+    \item \textbf{Containers:} \texttt{app} (porta 8000), \texttt{db} (MariaDB, porta 3306 interna / 5432 no host), \texttt{cadvisor} (porta 8080), \texttt{node-exporter} (porta 9100), \texttt{prometheus} (porta 9090), \texttt{grafana} (porta 3000) e \texttt{locust} (porta 8089).
     \item \textbf{Redes (\textit{Networks}):} \texttt{monitoring-net} (\textit{driver bridge}), permitindo a resolução de nomes interna entre os serviços.
     \item \textbf{Armazenamento (\textit{Volumes}):} \texttt{db\_data} (persistência do banco de dados de teste), \texttt{prometheus\_data} (séries temporais) e \texttt{grafana\_data} (estado e painéis do Grafana).
 \end{itemize}
@@ -105,7 +105,7 @@ Cada componente do ecossistema desempenha um papel específico na arquitetura de
 
 \begin{itemize}
     \item \textbf{Docker e Docker Compose:} orquestração declarativa dos serviços, redes virtuais e volumes persistentes.
-    \item \textbf{Aplicação Educacional e PostgreSQL:} sistema alvo executado localmente com dados fictícios (\textit{seed}) para isolamento completo da produção.
+    \item \textbf{Aplicação Educacional (CreateJoy) e MariaDB:} sistema alvo em PHP executado localmente com banco de dados MariaDB populado com dados fictícios (\textit{seed}) para isolamento completo da produção.
     \item \textbf{cAdvisor:} coletor de métricas de uso de recursos (CPU, memória, rede e I/O) em nível de container.
     \item \textbf{Node Exporter:} agente responsável por expor métricas de hardware e kernel do Sistema Operacional hospedeiro.
     \item \textbf{Prometheus:} banco de dados de séries temporais configurado com \textit{scrape\_interval} de 5 segundos para coleta junto aos agentes.
