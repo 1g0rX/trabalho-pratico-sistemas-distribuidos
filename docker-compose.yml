@@ -47,7 +47,7 @@ services:
       - monitoring-net
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    image: ghcr.io/google/cadvisor:v0.61.1
     container_name: cadvisor
     restart: unless-stopped
     privileged: true
