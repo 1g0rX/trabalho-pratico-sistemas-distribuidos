@@ -41,7 +41,7 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
   - Validar `docker-compose.yml` (rede `monitoring-net`, volumes `db_data`, `prometheus_data`, `grafana_data` e dependências). Quando `app/Dockerfile` estiver pronto, substituir `httpbin` por `build: ./app`, ajustar a porta para `8000:8000` e atualizar o `--host` do Locust para `http://app:8000`.
   - Validar `prometheus/prometheus.yml` (coleta configurada a cada `5s`).
   - Montar no Grafana o Dashboard com gráficos de **CPU** (Host e por container), **Memória RAM** (Host e por container), **I/O de Disco** e **Tráfego de Rede**, exportando o `.json` para `grafana/provisioning/dashboards/`.
-- **Como testar:** executar `docker compose up -d`, verificar em `http://localhost:9090/targets` se `prometheus`, `cadvisor` e `node-exporter` estão **`UP`**, e confirmar em `http://localhost:3000` (`admin` / `admin`) se os gráficos carregam automaticamente.
+- **Como testar:** executar `docker compose up -d`, verificar em `http://localhost:9090/targets` se `prometheus`, `cadvisor` e `node-exporter` estão **`UP`**, e confirmar em `http://localhost:3000` (`admin` / `Create123`) se os gráficos carregam automaticamente.
 
 ### Membro 3 — Testes de Carga: Alunos e Loja (`load-tests/locust_alunos.py` | branch `feat/carga-alunos`)
 - **O que vai fazer:** simular usuários simultâneos e compras concorrentes na loja usando Python/Locust dentro do Docker.
@@ -83,7 +83,7 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
 3. **Acessar as interfaces:**
    - **CreateJoy completo:** `http://localhost:8000`
    - **Prometheus (Targets):** `http://localhost:9090/targets`
-   - **Grafana (Dashboards):** `http://localhost:3000` (usuário `admin` / senha `admin`)
+   - **Grafana (Dashboards):** `http://localhost:3000` (usuário `admin` / senha `Create123`)
    - **Locust (Testes de carga):** `http://localhost:8089`
 
    O guia completo de instalação, coleta e interpretação está em

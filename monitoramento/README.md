@@ -59,7 +59,7 @@ serviços devem aparecer como `Up`.
 Credenciais do Grafana:
 
 - usuário: `admin`;
-- senha: `admin`.
+- senha: `Create123`.
 
 O Prometheus, o cAdvisor, o Node Exporter e o Locust não possuem login neste
 ambiente local.
