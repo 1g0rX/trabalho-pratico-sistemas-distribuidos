@@ -1,5 +1,12 @@
-node_modules
-npm-debug.log
-.env
 .git
+.gitignore
+node_modules
+database/backups
+database/import_students_mapa_2026.sql
+storage/uploads/*
+storage/avatars/*
+storage/sessions/*
+api/config.local.php
+*.log
+*.zip
 

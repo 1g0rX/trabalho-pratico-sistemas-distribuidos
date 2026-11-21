@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" role="img" aria-labelledby="title desc">
+  <title id="title">Teclado gamer</title>
+  <desc id="desc">Ilustração de um teclado gamer azul e preto.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#183c66"/><stop offset="1" stop-color="#07182d"/></linearGradient>
+    <linearGradient id="edge" x1="0" x2="1"><stop stop-color="#1e72b8"/><stop offset=".5" stop-color="#23b4ff"/><stop offset="1" stop-color="#f26522"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#06182c" flood-opacity=".28"/></filter>
+  </defs>
+  <ellipse cx="360" cy="354" rx="285" ry="38" fill="#0d2745" opacity=".12"/>
+  <g transform="translate(75 105) skewX(-5)" filter="url(#shadow)">
+    <rect width="570" height="235" rx="30" fill="url(#body)"/>
+    <rect x="9" y="9" width="552" height="217" rx="23" fill="none" stroke="url(#edge)" stroke-width="8"/>
+    <g fill="#d9efff" stroke="#1e72b8" stroke-width="2">
+      <g id="row"><rect x="35" y="37" width="38" height="30" rx="6"/><rect x="82" y="37" width="38" height="30" rx="6"/><rect x="129" y="37" width="38" height="30" rx="6"/><rect x="176" y="37" width="38" height="30" rx="6"/><rect x="223" y="37" width="38" height="30" rx="6"/><rect x="270" y="37" width="38" height="30" rx="6"/><rect x="317" y="37" width="38" height="30" rx="6"/><rect x="364" y="37" width="38" height="30" rx="6"/><rect x="411" y="37" width="38" height="30" rx="6"/><rect x="458" y="37" width="75" height="30" rx="6"/></g>
+      <use href="#row" transform="translate(0 42)"/><use href="#row" transform="translate(0 84)"/>
+      <rect x="35" y="163" width="58" height="30" rx="6"/><rect x="102" y="163" width="38" height="30" rx="6"/><rect x="149" y="163" width="38" height="30" rx="6"/><rect x="196" y="163" width="218" height="30" rx="6"/><rect x="423" y="163" width="38" height="30" rx="6"/><rect x="470" y="163" width="63" height="30" rx="6"/>
+    </g>
+    <path d="M38 207h494" stroke="#f26522" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+  </g>
+</svg>
