@@ -1,61 +1,55 @@
-# Contrato de Rotas da Aplicação
+# Rotas reais do CreateJoy
 
-Rotas da cópia local isolada da CreateJoy. O banco contém somente dados fictícios e pode ser recriado removendo o volume `db_data`.
+A aplicação completa é servida em `http://localhost:8000`. A API PHP usa o
+endpoint `/api/index.php` e identifica cada operação pelo parâmetro `route`.
+As rotas autenticadas usam a sessão `CREATEJOYSESSID` e, em alterações, o
+token retornado no login no cabeçalho `X-CSRF-Token`.
 
-## Informações Gerais
-- **Porta interna do container `app`:** `8000` (se diferente, avisar o Membro 2 e o grupo)
-- **Autenticação:** token Bearer retornado pela rota de login, válido por 12 horas.
-- **Usuário de teste (seed):**
-  - E-mail/Login: `aluno.teste@createjoy.test`
-  - Senha: `Create123`
+## Contas fictícias
 
----
+Todas as contas usam a senha `Admin@123`.
 
-## 1. Login / Autenticação
-- **Método e Rota:** `POST /api/login`
-- **Payload (JSON):**
-  ```json
-  {
-    "email": "aluno.teste@createjoy.test",
-    "password": "Create123"
-  }
-  ```
-- **Resposta esperada:** `200 OK`, com `token` e os dados do usuário.
-- **Cabeçalho nas próximas rotas:** `Authorization: Bearer <token>`.
+| Perfil | E-mail |
+| --- | --- |
+| Aluno | `aluno.demo@createjoy.local` |
+| Professor | `professor.demo@createjoy.local` |
+| Supervisão | `supervisao.demo@createjoy.local` |
+| Financeiro | `financeiro.demo@createjoy.local` |
+| Gestão administrativa | `administrativo.demo@createjoy.local` |
+| Admin | `admin@createjoy.com` |
 
----
+## Saúde
 
-## 2. Requisições de Alunos (Leitura / Navegação)
-- **Método e Rota:** `GET /api/alunos/dashboard`
-- **Outras rotas de listagem:** `GET /api/loja/produtos`, `GET /api/atividades`
+- `GET /api/index.php?route=health`
 
----
+## Login
 
-## 3. Compras Simultâneas na Loja
-- **Método e Rota:** `POST /api/loja/comprar`
-- **Payload (JSON):**
-  ```json
-  {
-    "produto_id": 1,
-    "quantidade": 1
-  }
-  ```
+- `POST /api/index.php?route=auth/login`
+- JSON: `{"email":"aluno.demo@createjoy.local","password":"Admin@123","role":"student"}`
+- A resposta contém `csrfToken`, `user` e o conjunto de dados do perfil.
 
----
+## Listagem de dados, missões e loja
 
-## 4. Envio Simultâneo de Atividades
-- **Método e Rota:** `POST /api/atividades/enviar`
-- **Tipo de conteúdo:** `application/json` com limite de 6 MB.
-- **Payload (JSON):**
-  ```json
-  {
-    "atividade_id": 1,
-    "conteudo": "texto ou base64 de tamanho variável"
-  }
-  ```
+- `GET /api/index.php?route=bootstrap`
+- Requer a sessão criada no login.
+- A resposta contém `students`, `missions`, `activities`, `storeProducts`,
+  `storeRequests` e os demais dados permitidos para o perfil.
 
----
+## Solicitação de compra
 
-## 5. Saúde e métricas
-- `GET /health`: verifica a aplicação e a conexão com o PostgreSQL.
-- `GET /metrics`: expõe métricas no formato Prometheus.
+- `POST /api/index.php?route=store/request/create`
+- Cabeçalho: `X-CSRF-Token: <token-do-login>`
+- JSON: `{"product_id":1,"details":"Solicitação do teste de carga"}`
+
+## Envio de atividade/missão
+
+- `POST /api/index.php?route=submissions/create`
+- Cabeçalho: `X-CSRF-Token: <token-do-login>`
+- `multipart/form-data` com `mission_id`, `notes`, `learned` e, opcionalmente,
+  até três campos `files[]`.
+- O limite é 5 MB por arquivo e 8 MB no total da tentativa.
+
+## Encerrar sessão
+
+- `POST /api/index.php?route=auth/logout`
+- Cabeçalho: `X-CSRF-Token: <token-do-login>`
