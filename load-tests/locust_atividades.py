@@ -2,160 +2,163 @@
 Cenário B (Membro 4): Envio Simultâneo de Atividades com Entradas de Tamanhos Variados.
 
 Objetivo:
-- Simular o envio concorrente de atividades com entradas de:
+- Simular o envio concorrente de atividades/missões no CreateJoy com entradas de:
   * 1 KB   (Pequena) -> Baseline de latência e overhead mínimo de requisição
-  * 100 KB (Média)   -> Pressão moderada de serialização e buffer de rede
-  * 5 MB   (Grande)  -> Estresse de Memória RAM, I/O de Disco e Tráfego de Rede
-- Compatível tanto com a aplicação real definida em `app/ROTAS.md` (`/api/atividades/enviar`)
-  quanto com o container placeholder `httpbin` (`/post`) via detecção automática de fallback.
-
-Variáveis de ambiente suportadas (opcionais):
-- TAMANHO_ENTRADA : "todos" (padrão) | "pequeno" | "medio" | "grande"
-- TIPO_CONTEUDO   : "json" (padrão) | "multipart"
-- ROTA_LOGIN      : "/api/login" (padrão)
-- ROTA_ATIVIDADES : "/api/atividades/enviar" (padrão, com fallback automático para "/post" no httpbin)
-- AUTH_EMAIL      : "aluno.teste@cefetmg.br" (padrão do seed em app/ROTAS.md)
-- AUTH_PASSWORD   : "123456" (padrão do seed em app/ROTAS.md)
+  * 100 KB (Média)   -> Pressão moderada de rede, banco e escrita em disco
+  * 5 MB   (Grande)  -> Estresse de Memória RAM, I/O de Disco, hash SHA-256 e Tráfego de Rede
+- Utiliza as rotas reais documentadas em `app/ROTAS.md`:
+  * Login: `POST /api/index.php?route=auth/login` (sessão `CREATEJOYSESSID` + `csrfToken`)
+  * Envio: `POST /api/index.php?route=submissions/create` (`multipart/form-data` + `X-CSRF-Token`)
+- Mantém fallback automático para `/post` caso executado contra o placeholder `httpbin`.
 """
 
 import io
-import logging
 import os
 import random
 import string
 from locust import HttpUser, between, task
 
-logger = logging.getLogger(__name__)
 
-
-def gerar_texto(tamanho_bytes: int) -> str:
-    """Gera uma string alfanumérica com o tamanho exato em bytes."""
-    bloco_base = "".join(random.choices(string.ascii_letters + string.digits, k=1024))
-    repeticoes, resto = divmod(max(1, tamanho_bytes), 1024)
-    return (bloco_base * repeticoes) + bloco_base[:resto]
+def gerar_codigo_ino(tamanho_bytes: int) -> bytes:
+    """Gera um conteúdo de código Arduino (.ino) com o tamanho exato solicitado em bytes."""
+    cabecalho = (
+        "// Sketch gerado automaticamente pelo Locust para teste de carga (CreateJoy)\n"
+        "void setup() { pinMode(13, OUTPUT); }\n"
+        "void loop() { digitalWrite(13, HIGH); delay(500); digitalWrite(13, LOW); delay(500); }\n"
+    )
+    bloco_comentario = "// " + "".join(
+        random.choices(string.ascii_letters + string.digits, k=1020)
+    ) + "\n"
+    restante = max(0, tamanho_bytes - len(cabecalho))
+    repeticoes, sobra = divmod(restante, len(bloco_comentario))
+    texto = cabecalho + (bloco_comentario * repeticoes) + bloco_comentario[:sobra]
+    return texto.encode("utf-8")[:tamanho_bytes]
 
 
 # ==============================================================================
 # PRÉ-GERAÇÃO DOS PAYLOADS EM MEMÓRIA (1 KB, 100 KB e 5 MB)
-# Evita que a geração de strings consuma CPU do container do Locust durante o teste
+# Evita que a geração de strings consuma CPU do container do Locust durante o teste.
+# No envio de 5 MB, o payload total de 5 MB é dividido nos 3 anexos `files[]` (~1,67 MB cada)
+# previstos em `app/ROTAS.md`, respeitando o `upload_max_filesize=2M` padrão do PHP/Apache
+# e totalizando 5 MB exatos por requisição POST.
 # ==============================================================================
-TAMANHO_PEQUENO_BYTES = 1 * 1024           # 1 KB
-TAMANHO_MEDIO_BYTES = 100 * 1024           # 100 KB
-TAMANHO_GRANDE_BYTES = 5 * 1024 * 1024     # 5 MB
+TAMANHO_PEQUENO_BYTES = 1 * 1024               # 1 KB
+TAMANHO_MEDIO_BYTES = 100 * 1024               # 100 KB
+TAMANHO_GRANDE_TOTAL_BYTES = 5 * 1024 * 1024   # 5 MB total na requisição
+TAMANHO_GRANDE_PARTE_BYTES = TAMANHO_GRANDE_TOTAL_BYTES // 3
 
-PAYLOAD_PEQUENO = gerar_texto(TAMANHO_PEQUENO_BYTES)
-PAYLOAD_MEDIO = gerar_texto(TAMANHO_MEDIO_BYTES)
-PAYLOAD_GRANDE = gerar_texto(TAMANHO_GRANDE_BYTES)
+PAYLOAD_PEQUENO_BYTES = gerar_codigo_ino(TAMANHO_PEQUENO_BYTES)
+PAYLOAD_MEDIO_BYTES = gerar_codigo_ino(TAMANHO_MEDIO_BYTES)
+PAYLOAD_GRANDE_PARTE_BYTES = gerar_codigo_ino(TAMANHO_GRANDE_PARTE_BYTES)
 
-# ==============================================================================
-# CONFIGURAÇÕES E CONTRATO DE ROTAS (app/ROTAS.md)
-# ==============================================================================
+# Permite filtrar via variável de ambiente TAMANHO_ENTRADA (pequeno | medio | grande | todos)
 MODO = os.getenv("TAMANHO_ENTRADA", "todos").strip().lower()
-TIPO_CONTEUDO = os.getenv("TIPO_CONTEUDO", "json").strip().lower()
 
-ROTA_LOGIN = os.getenv("ROTA_LOGIN", "/api/login").strip()
-ROTA_ATIVIDADES_PADRAO = os.getenv("ROTA_ATIVIDADES", "/api/atividades/enviar").strip()
+ROTA_LOGIN = os.getenv("ROTA_LOGIN", "/api/index.php?route=auth/login").strip()
+ROTA_SUBMISSAO = os.getenv("ROTA_ATIVIDADES", "/api/index.php?route=submissions/create").strip()
 ROTA_FALLBACK_HTTPBIN = "/post"
 
-AUTH_EMAIL = os.getenv("AUTH_EMAIL", "aluno.teste@cefetmg.br").strip()
-AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "123456").strip()
-ATIVIDADE_ID_PADRAO = int(os.getenv("ATIVIDADE_ID", "1"))
+AUTH_EMAIL = os.getenv("AUTH_EMAIL", "aluno.demo@createjoy.local").strip()
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "Admin@123").strip()
 
 
 class EnvioAtividadeUsuario(HttpUser):
     """
-    Usuário virtual do Locust responsável por submeter atividades concorrentes
-    com payloads de 1 KB, 100 KB e 5 MB.
+    Usuário virtual do Locust responsável por autenticar como aluno no CreateJoy
+    e enviar atividades simultâneas com entradas de 1 KB, 100 KB e 5 MB.
     """
 
     wait_time = between(0.5, 2.0)
 
     def on_start(self):
-        """
-        Executado quando o usuário virtual inicia:
-        1. Tenta autenticar na rota de login definida em `app/ROTAS.md` (`/api/login`).
-        2. Caso receba token JWT, configura o header `Authorization: Bearer <token>`.
-        3. Se o container alvo ainda for o placeholder `httpbin` (status 404 em `/api/login`),
-           ativa automaticamente o fallback para `/post`.
-        """
-        self.headers = {}
-        self.rota_envio = ROTA_ATIVIDADES_PADRAO
+        """Autentica na conta fictícia do CreateJoy e obtém o token CSRF e missões ativas."""
+        self.csrf_token = ""
+        self.mission_ids = [1, 2]
+        self.usar_fallback_httpbin = False
 
         with self.client.post(
             ROTA_LOGIN,
-            json={"email": AUTH_EMAIL, "password": AUTH_PASSWORD},
-            name="AUTH /api/login",
+            json={
+                "email": AUTH_EMAIL,
+                "password": AUTH_PASSWORD,
+                "role": "student",
+            },
+            name="POST auth/login",
             catch_response=True,
-        ) as resp:
-            if resp.status_code in (200, 201):
+        ) as response:
+            if response.status_code == 200:
                 try:
-                    dados = resp.json()
-                    token = (
-                        dados.get("token")
-                        or dados.get("access_token")
-                        or dados.get("jwt")
-                    )
-                    if token:
-                        self.headers["Authorization"] = f"Bearer {token}"
+                    payload = response.json()
+                    self.csrf_token = payload.get("csrfToken", "")
+                    missoes = [
+                        m["id"]
+                        for m in payload.get("data", {}).get("missions", [])
+                        if m.get("status") == "active"
+                        and m.get("progress_status") not in ("blocked", "approved")
+                    ]
+                    if missoes:
+                        self.mission_ids = missoes
                 except ValueError:
                     pass
-                resp.success()
-            elif resp.status_code in (404, 405):
-                # Placeholder httpbin detectado ou aplicação sem autenticação obrigatória
-                if "ROTA_ATIVIDADES" not in os.environ:
-                    self.rota_envio = ROTA_FALLBACK_HTTPBIN
-                resp.success()
+
+                if self.csrf_token:
+                    response.success()
+                else:
+                    response.failure("Token CSRF ausente na resposta do login")
+            elif response.status_code in (404, 405):
+                # Fallback automático caso o ambiente esteja rodando com o placeholder httpbin
+                self.usar_fallback_httpbin = True
+                response.success()
             else:
-                resp.failure(f"Falha inesperada no login (HTTP {resp.status_code})")
+                response.failure(f"Falha no login: HTTP {response.status_code}")
 
-    def _enviar_atividade(self, rotulo: str, categoria: str, conteudo: str):
-        """
-        Dispara o payload da atividade conforme o contrato em `app/ROTAS.md`,
-        suportando tanto `application/json` quanto `multipart/form-data`.
-        """
-        atividade_id = ATIVIDADE_ID_PADRAO
-
-        if TIPO_CONTEUDO == "multipart":
-            arquivo_virtual = io.BytesIO(conteudo.encode("utf-8"))
-            files = {
-                "arquivo": (f"atividade_{categoria}.txt", arquivo_virtual, "text/plain")
-            }
-            data = {
-                "atividade_id": str(atividade_id),
-                "tamanho": categoria,
-            }
-            requisicao = self.client.post(
-                self.rota_envio,
-                data=data,
-                files=files,
-                headers=self.headers,
+    def _enviar_submissao(self, rotulo: str, categoria: str, arquivos: list[tuple[str, bytes]]):
+        """Envia a tentativa da atividade/missão via multipart/form-data com X-CSRF-Token."""
+        if self.usar_fallback_httpbin:
+            arquivos_httpbin = [
+                ("files[]", (nome, io.BytesIO(conteudo), "text/plain"))
+                for nome, conteudo in arquivos
+            ]
+            with self.client.post(
+                ROTA_FALLBACK_HTTPBIN,
+                data={"mission_id": "1", "tamanho": categoria},
+                files=arquivos_httpbin,
                 name=rotulo,
                 catch_response=True,
-            )
-        else:
-            payload = {
-                "atividade_id": atividade_id,
-                "tamanho": categoria,
-                "conteudo": conteudo,
-            }
-            requisicao = self.client.post(
-                self.rota_envio,
-                json=payload,
-                headers=self.headers,
-                name=rotulo,
-                catch_response=True,
-            )
+            ) as resp:
+                if resp.status_code in (200, 201):
+                    resp.success()
+                else:
+                    resp.failure(f"Falha HTTP {resp.status_code} no fallback")
+            return
 
-        with requisicao as resp:
-            if resp.status_code in (200, 201, 202):
-                resp.success()
-            elif resp.status_code == 404 and self.rota_envio != ROTA_FALLBACK_HTTPBIN:
-                # Fallback dinâmico caso a rota real ainda não exista no container alvo
-                self.rota_envio = ROTA_FALLBACK_HTTPBIN
-                resp.success()
+        if not self.csrf_token:
+            return
+
+        mission_id = random.choice(self.mission_ids)
+        data = {
+            "mission_id": str(mission_id),
+            "notes": f"Envio automatizado de teste de carga ({categoria}).",
+            "learned": f"Validação experimental de impacto de I/O, RAM e Rede ({categoria}).",
+        }
+        files = [
+            ("files[]", (nome, io.BytesIO(conteudo), "text/plain"))
+            for nome, conteudo in arquivos
+        ]
+
+        with self.client.post(
+            ROTA_SUBMISSAO,
+            data=data,
+            files=files,
+            headers={"X-CSRF-Token": self.csrf_token},
+            name=rotulo,
+            catch_response=True,
+        ) as response:
+            if response.status_code in (200, 201):
+                response.success()
             else:
-                resp.failure(
-                    f"Erro HTTP {resp.status_code} ao enviar atividade ({categoria})"
+                response.failure(
+                    f"Falha no envio ({categoria}): HTTP {response.status_code} - {response.text[:160]}"
                 )
 
     @task(3)
@@ -163,10 +166,10 @@ class EnvioAtividadeUsuario(HttpUser):
         """Envio de atividade com entrada pequena (~1 KB)."""
         if MODO not in ("todos", "pequeno", "1kb"):
             return
-        self._enviar_atividade(
+        self._enviar_submissao(
             rotulo="POST /atividades (1KB)",
-            categoria="pequeno",
-            conteudo=PAYLOAD_PEQUENO,
+            categoria="1KB",
+            arquivos=[("sketch_1kb.ino", PAYLOAD_PEQUENO_BYTES)],
         )
 
     @task(2)
@@ -174,19 +177,23 @@ class EnvioAtividadeUsuario(HttpUser):
         """Envio de atividade com entrada média (~100 KB)."""
         if MODO not in ("todos", "medio", "100kb"):
             return
-        self._enviar_atividade(
+        self._enviar_submissao(
             rotulo="POST /atividades (100KB)",
-            categoria="medio",
-            conteudo=PAYLOAD_MEDIO,
+            categoria="100KB",
+            arquivos=[("sketch_100kb.ino", PAYLOAD_MEDIO_BYTES)],
         )
 
     @task(1)
     def enviar_atividade_grande(self):
-        """Envio de atividade com entrada grande (~5 MB) — estresse de RAM, Disco e Rede."""
+        """Envio de atividade com entrada grande (~5 MB totais em 3 arquivos .ino)."""
         if MODO not in ("todos", "grande", "5mb"):
             return
-        self._enviar_atividade(
+        self._enviar_submissao(
             rotulo="POST /atividades (5MB)",
-            categoria="grande",
-            conteudo=PAYLOAD_GRANDE,
+            categoria="5MB",
+            arquivos=[
+                ("sketch_5mb_parte1.ino", PAYLOAD_GRANDE_PARTE_BYTES),
+                ("sketch_5mb_parte2.ino", PAYLOAD_GRANDE_PARTE_BYTES),
+                ("sketch_5mb_parte3.ino", PAYLOAD_GRANDE_PARTE_BYTES),
+            ],
         )
