@@ -86,6 +86,9 @@ Para que todos trabalhem em paralelo sem dependências entre si, o projeto segue
    - **Grafana (Dashboards):** `http://localhost:3000` (usuário `admin` / senha `admin`)
    - **Locust (Testes de carga):** `http://localhost:8089`
 
+   O guia completo de instalação, coleta e interpretação está em
+   [`monitoramento/README.md`](monitoramento/README.md).
+
 4. **Entrar com dados fictícios:**
    - Aluno: `aluno.demo@createjoy.local`
    - Professor: `professor.demo@createjoy.local`
