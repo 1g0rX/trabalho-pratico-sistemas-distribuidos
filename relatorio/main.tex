@@ -33,27 +33,27 @@ igor.moreira.lopes22@gmail.com}
 \IEEEauthorblockN{Lívia Gonçalves}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@exemplo.com}
+liviagonalves333@gmail.com}
 \and
-\IEEEauthorblockN{Nome do Membro 3}
+\IEEEauthorblockN{Arthur de Oliveira Mendonça}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@exemplo.com}
+mendoncaoarthur@gmail.com}
 \and
-\IEEEauthorblockN{Nome do Membro 4}
+\IEEEauthorblockN{Gabriel Vitor}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@exemplo.com}
+gabriel.vitor@gafit.com.br}
 \and
 \IEEEauthorblockN{Nome do Membro 5}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@exemplo.com}
+email@ufci.edu.br}
 \and
 \IEEEauthorblockN{Nome do Membro 6}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@exemplo.com}
+email@ufci.edu.br}
 }
 
 \maketitle
@@ -72,7 +72,7 @@ Aplicações web organizadas em múltiplos serviços compartilham CPU, memória 
 
 O isolamento proporcionado por containers via \textit{namespaces} e \textit{cgroups} do núcleo Linux facilita o empacotamento de serviços, mas não elimina a disputa pelo hardware subjacente. Quando uma aplicação web e seu banco de dados executam no mesmo hospedeiro, requisições concorrentes de leitura, gravação e transferência de arquivos competem por ciclos de processador, largura de banda de rede e filas de I/O. Observar separadamente o consumo do hospedeiro e o consumo individual de cada container permite relacionar eventos da camada de aplicação aos mecanismos de contenção do SO.
 
-Este trabalho tem como objetivo implementar e validar uma infraestrutura reproduzível de observabilidade para a Prática 2 da disciplina de Sistemas Operacionais Modernos, ministrada no Departamento de Computação (DECOM) do CEFET-MG. A solução monitora uma cópia local isolada do sistema de gestão educacional CreateJoy, sem conexão com o ambiente de produção, integrando métricas de infraestrutura e métricas funcionais da própria aplicação. O restante do texto organiza-se da seguinte forma: a Seção~II descreve a arquitetura de containers, redes e volumes; a Seção~III apresenta o papel técnico de cada ferramenta adotada; a Seção~IV detalha os cenários de carga, os resultados experimentais coletados e a análise de contenção de recursos; a Seção~V sintetiza as conclusões e os próximos passos; e a Seção~VI informa o endereço do repositório com todos os manifestos.
+Este trabalho tem como objetivo implementar e validar uma infraestrutura reproduzível de observabilidade para a Prática 2 da disciplina de Sistemas Operacionais Modernos, ministrada no Departamento de Computação (DECOM) do CEFET-MG / UFCI-MG. A solução monitora uma cópia local isolada do sistema de gestão educacional CreateJoy, sem conexão com o ambiente de produção, integrando métricas de infraestrutura e métricas funcionais da própria aplicação. O restante do texto organiza-se da seguinte forma: a Seção~II descreve a arquitetura de containers, redes e volumes; a Seção~III apresenta o papel técnico de cada ferramenta adotada; a Seção~IV detalha os cenários de carga, os resultados experimentais coletados e a análise de contenção de recursos; a Seção~V sintetiza as conclusões e os próximos passos; e a Seção~VI informa o endereço do repositório com todos os manifestos.
 
 \section{Mapeamento da Solução e Arquitetura}
 
@@ -180,12 +180,12 @@ Após a execução de \texttt{docker compose up -d --build}, o comando \texttt{d
     \label{fig:prom_targets}
 \end{figure}
 
-Em estado ocioso (Fig.~\ref{fig:grafana_ocioso}), o hospedeiro registrou 12,33\% de CPU e 35,47\% de memória RAM. O container \texttt{app-educacional} manteve consumo basal de 0,29\% de CPU e 20,26~MiB de memória RAM, enquanto \texttt{db-educacional} registrou 0,88\% de CPU e 119,56~MiB de memória. A métrica \texttt{createjoy\_up} permaneceu em 1, com 1 entrega pendente e 0 solicitações pendentes na loja.
+Em estado ocioso (Fig.~\ref{fig:grafana_ocioso}), o hospedeiro registrou 12,33\% de CPU e 35,47\% de memória RAM na coleta automatizada inicial. O container \texttt{app-educacional} manteve consumo basal de 0,29\% de CPU e 20,26~MiB de memória RAM, enquanto \texttt{db-educacional} registrou 0,88\% de CPU e 119,56~MiB de memória, ambos com 0~B/s de escrita em disco. A métrica \texttt{createjoy\_up} permaneceu em 1, com 1 entrega pendente e 0 solicitações pendentes na loja. No instante da captura visual da Fig.~\ref{fig:grafana_ocioso}, os contadores globais do hospedeiro incluem também processos externos da própria estação de trabalho, o que reforça a utilidade das séries por container do cAdvisor para isolar a linha de base da aplicação.
 
 \begin{figure*}[t]
     \centering
-    \includegraphics[width=0.92\textwidth]{imagens/grafana_ocioso.png}
-    \caption{Dashboard \textit{Observabilidade CreateJoy} no Grafana em estado ocioso, registrando o consumo basal dos containers e do sistema hospedeiro antes da injeção de carga.}
+    \includegraphics[width=0.84\textwidth]{imagens/grafana_ocioso.png}
+    \caption{Dashboard \textit{Observabilidade CreateJoy} no Grafana em estado ocioso, registrando o consumo basal estável dos containers (\texttt{app-educacional} abaixo de 0,3\% de CPU e \texttt{db-educacional} abaixo de 1\% de CPU) antes da injeção de carga.}
     \label{fig:grafana_ocioso}
 \end{figure*}
 
@@ -196,27 +196,15 @@ Conforme exibido na Fig.~\ref{fig:grafana_alunos}, a elevação de 0 para 100 us
 
 \begin{figure*}[t]
     \centering
-    \includegraphics[width=0.92\textwidth]{imagens/grafana_carga_alunos.png}
+    \includegraphics[width=0.84\textwidth]{imagens/grafana_carga_alunos.png}
     \caption{Dashboard \textit{Observabilidade CreateJoy} durante o pico de 100 usuários simultâneos no Cenário~1 (\texttt{locust\_alunos.py}), evidenciando a escalada de CPU, memória RAM e tráfego de rede nos containers \texttt{app-educacional} e \texttt{db-educacional}.}
     \label{fig:grafana_alunos}
 \end{figure*}
 
-\subsection{Cenário 2: Envio Simultâneo de Atividades com Entradas Variadas}
-No Cenário~2 (\texttt{locust\_atividades.py}, 20 usuários virtuais por patamar), os envios de 1~KB totalizaram 255 requisições (7,43~req/s), os de 100~KB somaram 192 requisições (5,52~req/s) e os de 5~MB concluíram 131 requisições (2,97~req/s). A variação do porte da entrada alterou diretamente o gargalo do sistema: enquanto o modo de 1~KB concentrou o consumo em CPU do banco (32,26\%) e da aplicação (19,07\%) com escrita de apenas 18,3~KB/s no container da aplicação, o modo de 5~MB deslocou a saturação para armazenamento e rede, elevando a escrita em disco do \texttt{app-educacional} para 3,57~MB/s (6,43~MB/s no hospedeiro) e o tráfego de rede recebido para 11,22~MB/s.
-
-Ao longo dos três patamares, o contador funcional \texttt{createjoy\_pending\_submissions} saltou de 1 para 230 (após 1~KB), 401 (após 100~KB) e 509 (após 5~MB), como retratado em destaque vermelho na Fig.~\ref{fig:grafana_atividades}. Observaram-se ainda taxas reduzidas de erro HTTP~500 de 2,75\% (7 ocorrências em 1~KB), 0,52\% (1 ocorrência em 100~KB) e 3,05\% (4 ocorrências em 5~MB), todas acompanhadas da mesma mensagem de conflito de unicidade no banco quando dois usuários virtuais utilizando a mesma conta fictícia submeteram a mesma missão no mesmo milissegundo. Esse achado evidencia uma condição de corrida real na camada de persistência sob alta concorrência.
-
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=0.92\textwidth]{imagens/grafana_carga_atividades.png}
-    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o Cenário~2 (\texttt{locust\_atividades.py}, patamar de 5~MB), destacando o salto de entregas pendentes para 509, o pico de escrita em disco do container da aplicação (3,57~MB/s) e o tráfego de rede recebido (11,3~MB/s).}
-    \label{fig:grafana_atividades}
-\end{figure*}
-
-A Tabela~\ref{tab:resultados} consolida os valores de pico coletados na API do Prometheus e as estatísticas agregadas dos logs do Locust em todos os ensaios.
-
 \begin{table*}[t]
 \centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
 \caption{Consolidação das métricas experimentais coletadas no Prometheus e no Locust em cada cenário.}
 \label{tab:resultados}
 \begin{tabular}{@{}lccccccc@{}}
@@ -233,6 +221,20 @@ Atividades (5 MB) & 20 & 131 (3,05\%) & 19,54 & 10,80 / 6,95 & 102,31 / 266,01 &
 \bottomrule
 \end{tabular}
 \end{table*}
+
+\subsection{Cenário 2: Envio Simultâneo de Atividades com Entradas Variadas}
+No Cenário~2 (\texttt{locust\_atividades.py}, 20 usuários virtuais por patamar), os envios de 1~KB totalizaram 255 requisições (7,43~req/s), os de 100~KB somaram 192 requisições (5,52~req/s) e os de 5~MB concluíram 131 requisições (2,97~req/s). A variação do porte da entrada alterou diretamente o gargalo do sistema: enquanto o modo de 1~KB concentrou o consumo em CPU do banco (32,26\%) e da aplicação (19,07\%) com escrita de apenas 18,3~KB/s no container da aplicação, o modo de 5~MB deslocou a saturação para armazenamento e rede, elevando a escrita em disco do \texttt{app-educacional} para 3,57~MB/s (6,43~MB/s no hospedeiro) e o tráfego de rede recebido para 11,22~MB/s.
+
+Ao longo dos três patamares, o contador funcional \texttt{createjoy\_pending\_submissions} saltou de 1 para 230 (após 1~KB), 401 (após 100~KB) e 509 (após 5~MB), como retratado em destaque vermelho na Fig.~\ref{fig:grafana_atividades}. Observaram-se ainda taxas reduzidas de erro HTTP~500 de 2,75\% (7 ocorrências em 1~KB), 0,52\% (1 ocorrência em 100~KB) e 3,05\% (4 ocorrências em 5~MB), todas acompanhadas da mesma mensagem de conflito de unicidade no banco quando dois usuários virtuais utilizando a mesma conta fictícia submeteram a mesma missão no mesmo milissegundo. Esse achado evidencia uma condição de corrida real na camada de persistência sob alta concorrência.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.84\textwidth]{imagens/grafana_carga_atividades.png}
+    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o Cenário~2 (\texttt{locust\_atividades.py}, patamar de 5~MB), destacando o salto de entregas pendentes para 509, o pico de escrita em disco do container da aplicação (3,57~MB/s) e o tráfego de rede recebido (11,3~MB/s).}
+    \label{fig:grafana_atividades}
+\end{figure*}
+
+A Tabela~\ref{tab:resultados} consolida os valores de pico coletados na API do Prometheus e as estatísticas agregadas dos logs do Locust em todos os ensaios.
 
 \subsection{Análise de Contenção de Recursos do SO e Limitações}
 O cruzamento entre as métricas do hospedeiro (Node Exporter) e as métricas por container (cAdvisor) confirma quatro comportamentos clássicos de contenção no sistema operacional:
