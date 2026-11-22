@@ -20,40 +20,48 @@
     citecolor=blue
 }
 
+\makeatletter
+\newcommand{\linebreakand}{%
+  \end{@IEEEauthorhalign}
+  \hfill\mbox{}\par
+  \mbox{}\hfill\begin{@IEEEauthorhalign}
+}
+\makeatother
+
 \begin{document}
 
 \title{Observabilidade e Monitoramento de Recursos do Sistema Operacional com Containers: Estudo Experimental na Plataforma CreateJoy}
 
 \author{
 \IEEEauthorblockN{Igor Moreira Lopes}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-igor.moreira.lopes22@gmail.com}
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize igor.moreira.lopes22@gmail.com}
 \and
 \IEEEauthorblockN{Lívia Gonçalves}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-liviagonalves333@gmail.com}
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize liviagonalves333@gmail.com}
 \and
 \IEEEauthorblockN{Arthur de Oliveira Mendonça}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-mendoncaoarthur@gmail.com}
-\and
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize mendoncaoarthur@gmail.com}
+\linebreakand
 \IEEEauthorblockN{Maria Eduarda Alves Barbosa}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-mariaeduardaalvesbarbosa13@gmail.com}
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize mariaeduardaalvesbarbosa13@gmail.com}
 \and
 \IEEEauthorblockN{Lorena Ávila de Souza Silva}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-lorenaavila15@outlook.com}
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize lorenaavila15@outlook.com}
 \and
 \IEEEauthorblockN{Gustavo Henrique D'Anunciação Ferreira}
-\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
-Divinópolis, Brasil \\
-ghferreira92@gmail.com}
+\IEEEauthorblockA{\footnotesize\textit{Engenharia de Computação (UFCI-MG)} \\
+\footnotesize Divinópolis, Brasil \\
+\footnotesize ghferreira92@gmail.com}
 }
 
 \maketitle
