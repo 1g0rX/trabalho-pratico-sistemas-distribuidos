@@ -45,21 +45,26 @@ mendoncaoarthur@gmail.com}
 Divinópolis, Brasil \\
 gabriel.vitor@gafit.com.br}
 \and
-\IEEEauthorblockN{Nome do Membro 5}
+\IEEEauthorblockN{Maria Eduarda Alves Barbosa}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@ufci.edu.br}
+mariaeduardaalvesbarbosa13@gmail.com}
 \and
-\IEEEauthorblockN{Nome do Membro 6}
+\IEEEauthorblockN{Lorena Ávila de Souza Silva}
 \IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
 Divinópolis, Brasil \\
-email@ufci.edu.br}
+lorenaavila15@outlook.com}
+\and
+\IEEEauthorblockN{Gustavo Henrique D'Anunciação Ferreira}
+\IEEEauthorblockA{\textit{Engenharia de Computação (UFCI-MG)} \\
+Divinópolis, Brasil \\
+ghferreira92@gmail.com}
 }
 
 \maketitle
 
 \begin{abstract}
-Este trabalho apresenta o projeto, a implantação e a validação experimental de uma arquitetura de observabilidade para monitoramento de recursos do sistema operacional hospedeiro e de containers em ambiente orquestrado via Docker Compose. A pilha de coleta e visualização combina Node Exporter, cAdvisor, Prometheus e Grafana para acompanhar utilização de processador (CPU), memória principal (RAM), operações de entrada e saída (I/O) de disco e tráfego de rede. Como sistema alvo, utilizou-se uma instância local isolada da plataforma educacional CreateJoy, executada sobre PHP 8.3 com Apache e banco de dados MariaDB 11.4 populado exclusivamente com registros fictícios. Foram executados dois conjuntos de testes de carga em Python com Locust: o primeiro elevou a concorrência para 10, 50 e 100 alunos simultâneos em consultas e solicitações na loja, atingindo 3.380 requisições sem falhas (75,46 req/s) e elevando a CPU do banco de 0,88\% para 43,65\% e a RAM da aplicação de 20,26 MiB para 175,87 MiB; o segundo submeteu atividades simultâneas com arquivos de 1 KB, 100 KB e 5 MB, elevando a escrita em disco do container da aplicação para 3,57 MB/s (6,43 MB/s no hospedeiro), o tráfego recebido para 11,22 MB/s e as entregas pendentes de 1 para 509. Os resultados evidenciam a contenção diferenciada de CPU, memória, disco e rede segundo o perfil de carga.
+Este trabalho apresenta o projeto, a implantação e a validação experimental de uma arquitetura de observabilidade para monitoramento de recursos do sistema operacional hospedeiro e de containers em ambiente orquestrado via Docker Compose. A pilha de coleta e visualização combina Node Exporter, cAdvisor, Prometheus e Grafana para acompanhar utilização de processador (CPU), memória principal (RAM), operações de entrada e saída (I/O) de disco e tráfego de rede. Como sistema alvo, utilizou-se uma instância local isolada da plataforma educacional CreateJoy, executada sobre PHP 8.3 com Apache e banco de dados MariaDB 11.4 populado exclusivamente com registros fictícios. Foram executados dois conjuntos de testes de carga em Python com Locust: o primeiro elevou a concorrência para 10, 50 e 100 alunos simultâneos em consultas e solicitações na loja, atingindo 3.380 requisições sem falhas (75,46 req/s) e elevando a CPU do banco de 0,88\% para 43,65\% e a RAM da aplicação de 20,26 MiB para 175,87 MiB; o segundo submeteu atividades simultâneas com arquivos de 1 KB, 100 KB e 5 MB, elevando a escrita em disco do container da aplicação para 3,57 MB/s (6,43 MB/s no hospedeiro), o tráfego recebido para 11,22 MB/s e as entregas pendentes de 1 para 509. Os resultados mostram como a contenção de CPU, memória, disco e rede varia conforme o perfil de carga.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -81,7 +86,7 @@ A infraestrutura completa é declarada em um único arquivo \texttt{docker-compo
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.90\textwidth]{imagens/arquitetura.png}
-    \caption{Arquitetura da solução orquestrada via Docker Compose, destacando a rede virtual \texttt{monitoring-net}, os sete containers integrados, o fluxo de coleta do Prometheus e os três volumes persistentes.}
+    \caption{Arquitetura da solução em Docker Compose com a rede \texttt{monitoring-net}, os sete containers e os três volumes persistentes.}
     \label{fig:arquitetura}
 \end{figure*}
 
@@ -118,7 +123,7 @@ Cada componente foi selecionado para atender a uma responsabilidade isolada no f
 O Docker fornece o isolamento de processos e de sistema de arquivos dos serviços, enquanto o Docker Compose~\cite{dockercompose} centraliza a declaração da topologia, das variáveis de ambiente, das dependências de inicialização e dos volumes em um manifesto versionável. Essa abordagem assegura que qualquer integrante do grupo reproduza o mesmo ambiente com o comando \texttt{docker compose up -d --build}.
 
 \subsection{CreateJoy (PHP 8.3/Apache) e MariaDB 11.4}
-O sistema alvo é uma réplica local da plataforma educacional CreateJoy, empacotada a partir da imagem \texttt{php:8.3-apache} com a extensão \texttt{pdo\_mysql} e os módulos \texttt{headers} e \texttt{rewrite} habilitados, escutando na porta \texttt{8000}. A persistência é atendida pelo MariaDB 11.4~\cite{mariadb}, escolhido por compatibilidade direta com o esquema relacional da aplicação. A API centraliza as rotas em \texttt{/api/index.php}, empregando cookie de sessão (\texttt{CREATEJOYSESSID}) e proteção contra falsificação de requisição entre sites mediante cabeçalho \texttt{X-CSRF-Token} nas operações de escrita.
+O sistema alvo é uma réplica local da plataforma educacional CreateJoy, empacotada a partir da imagem \texttt{php:8.3-apache} com a extensão \texttt{pdo\_mysql} e os módulos \texttt{headers} e \texttt{rewrite} habilitados, escutando na porta \texttt{8000}. A persistência usa MariaDB 11.4~\cite{mariadb}, escolhido por compatibilidade direta com o esquema relacional da aplicação. A API centraliza as rotas em \texttt{/api/index.php}, usando cookie de sessão (\texttt{CREATEJOYSESSID}) e proteção CSRF pelo cabeçalho \texttt{X-CSRF-Token} nas operações de escrita.
 
 A aplicação disponibiliza também o endpoint \texttt{/metrics/index.php} no formato de exposição de texto do Prometheus. A cada consulta, o script verifica a conectividade com o banco e exporta cinco métricas do tipo \textit{gauge}: \texttt{createjoy\_up}, \texttt{createjoy\_students\_total}, \texttt{createjoy\_pending\_submissions}, \texttt{createjoy\_pending\_store\_requests} e \texttt{createjoy\_metrics\_generation\_seconds}.
 
@@ -129,7 +134,7 @@ O cAdvisor~\cite{cadvisor} (versão \texttt{v0.61.1}) executa em modo privilegia
 O Prometheus~\cite{prometheus} (versão \texttt{v2.55.1}) atua como coletor ativo (\textit{pull model}) e banco de séries temporais. O arquivo \texttt{prometheus/prometheus.yml} define \texttt{scrape\_interval} e \texttt{evaluation\_interval} de 5 segundos, com \texttt{scrape\_timeout} de 4 segundos, permitindo resposta visual rápida durante a demonstração ao vivo. Quatro alvos (\textit{jobs}) são monitorados: \texttt{prometheus} (\texttt{localhost:9090}), \texttt{cadvisor} (\texttt{cadvisor:8080}), \texttt{node-exporter} (\texttt{node-exporter:9100}) e \texttt{createjoy-app} (\texttt{app:8000/metrics/index.php}).
 
 \subsection{Grafana}
-O Grafana~\cite{grafana} (versão \texttt{11.3.1}) provê a interface gráfica de visualização. Tanto a fonte de dados (\texttt{datasource.yml}, apontando para \texttt{http://prometheus:9090}) quanto o painel \textit{Observabilidade CreateJoy} (\texttt{observabilidade-so.json}) são carregados por provisionamento declarativo em \texttt{grafana/provisioning/}. O painel reúne dez visualizações com atualização automática a cada 5 segundos: quatro cartões de estado (CPU do host, Memória RAM do host, disponibilidade da aplicação via \texttt{createjoy\_up} e entregas pendentes via \texttt{createjoy\_pending\_submissions}) e seis séries temporais (CPU por container, Memória RAM por container, I/O de disco do host, Tráfego de rede do host, I/O de disco por container e Tráfego de rede por container).
+O Grafana~\cite{grafana} (versão \texttt{11.3.1}) exibe os painéis de monitoramento. Tanto a fonte de dados (\texttt{datasource.yml}, apontando para \texttt{http://prometheus:9090}) quanto o painel \textit{Observabilidade CreateJoy} (\texttt{observabilidade-so.json}) são carregados por provisionamento declarativo em \texttt{grafana/provisioning/}. O painel reúne dez visualizações com atualização automática a cada 5 segundos: quatro cartões de estado (CPU do host, Memória RAM do host, disponibilidade da aplicação via \texttt{createjoy\_up} e entregas pendentes via \texttt{createjoy\_pending\_submissions}) e seis séries temporais (CPU por container, Memória RAM por container, I/O de disco do host, Tráfego de rede do host, I/O de disco por container e Tráfego de rede por container).
 
 \subsection{Locust (Python em Container)}
 O Locust~\cite{locust} executa integralmente dentro do container \texttt{locustio/locust:latest}, dispensando a instalação de interpretadores ou bibliotecas no hospedeiro. Ele permite definir o comportamento de usuários virtuais em Python e controlar dinamicamente o número de usuários simultâneos e a taxa de entrada (\textit{ramp-up}) pela interface web na porta \texttt{8089} ou em modo \textit{headless} via terminal.
@@ -192,12 +197,12 @@ Em estado ocioso (Fig.~\ref{fig:grafana_ocioso}), o hospedeiro registrou 12,33\%
 \subsection{Cenário 1: Usuários Simultâneos e Compras na Loja}
 A execução escalonada de \texttt{locust\_alunos.py} com 10 usuários (35~s, 268 requisições, 7,71~req/s), 50 usuários (35~s, 1.321 requisições, 37,98~req/s) e 100 usuários (45~s, 3.380 requisições, 75,46~req/s) transcorreu com 0,00\% de falhas em todos os patamares. Com 100 usuários simultâneos, a mediana global de latência manteve-se em 12~ms e o percentil 95 em 34~ms, mas a autenticação concorrente (\texttt{POST auth/login}) atingiu mediana de 2.700~ms e máximo de 5.720~ms devido ao custo de verificação de hash de senha e criação simultânea de sessões no PHP.
 
-Conforme exibido na Fig.~\ref{fig:grafana_alunos}, a elevação de 0 para 100 usuários provocou crescimento pronunciado de CPU em \texttt{app-educacional} (de 0,29\% para 32,46\%) e em \texttt{db-educacional} (de 0,88\% para 43,65\%), enquanto a CPU total do hospedeiro avançou para 24,55\% (pico instantâneo de 31,4\% no cartão de estado). A memória RAM do \texttt{app-educacional} multiplicou-se por mais de oito vezes, passando de 20,26~MiB para 175,87~MiB em decorrência da criação de processos \textit{worker} do Apache/PHP para atender às conexões paralelas, e o tráfego de rede recebido pela aplicação subiu de 542~B/s para 2,60~MB/s.
+Como mostra a Fig.~\ref{fig:grafana_alunos}, passar de 0 para 100 usuários elevou a CPU de \texttt{app-educacional} de 0,29\% para 32,46\% e a de \texttt{db-educacional} de 0,88\% para 43,65\%, enquanto a CPU total do hospedeiro chegou a 24,55\% (pico instantâneo de 31,4\% no cartão de estado). A memória RAM de \texttt{app-educacional} aumentou mais de oito vezes, de 20,26~MiB para 175,87~MiB, com a abertura de novos processos \textit{worker} do Apache/PHP para atender às conexões paralelas. No mesmo intervalo, o tráfego de rede recebido pela aplicação subiu de 542~B/s para 2,60~MB/s.
 
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.84\textwidth]{imagens/grafana_carga_alunos.png}
-    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o pico de 100 usuários simultâneos no Cenário~1 (\texttt{locust\_alunos.py}), evidenciando a escalada de CPU, memória RAM e tráfego de rede nos containers \texttt{app-educacional} e \texttt{db-educacional}.}
+    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o pico de 100 usuários simultâneos no Cenário~1 (\texttt{locust\_alunos.py}).}
     \label{fig:grafana_alunos}
 \end{figure*}
 
@@ -225,12 +230,12 @@ Atividades (5 MB) & 20 & 131 (3,05\%) & 19,54 & 10,80 / 6,95 & 102,31 / 266,01 &
 \subsection{Cenário 2: Envio Simultâneo de Atividades com Entradas Variadas}
 No Cenário~2 (\texttt{locust\_atividades.py}, 20 usuários virtuais por patamar), os envios de 1~KB totalizaram 255 requisições (7,43~req/s), os de 100~KB somaram 192 requisições (5,52~req/s) e os de 5~MB concluíram 131 requisições (2,97~req/s). A variação do porte da entrada alterou diretamente o gargalo do sistema: enquanto o modo de 1~KB concentrou o consumo em CPU do banco (32,26\%) e da aplicação (19,07\%) com escrita de apenas 18,3~KB/s no container da aplicação, o modo de 5~MB deslocou a saturação para armazenamento e rede, elevando a escrita em disco do \texttt{app-educacional} para 3,57~MB/s (6,43~MB/s no hospedeiro) e o tráfego de rede recebido para 11,22~MB/s.
 
-Ao longo dos três patamares, o contador funcional \texttt{createjoy\_pending\_submissions} saltou de 1 para 230 (após 1~KB), 401 (após 100~KB) e 509 (após 5~MB), como retratado em destaque vermelho na Fig.~\ref{fig:grafana_atividades}. Observaram-se ainda taxas reduzidas de erro HTTP~500 de 2,75\% (7 ocorrências em 1~KB), 0,52\% (1 ocorrência em 100~KB) e 3,05\% (4 ocorrências em 5~MB), todas acompanhadas da mesma mensagem de conflito de unicidade no banco quando dois usuários virtuais utilizando a mesma conta fictícia submeteram a mesma missão no mesmo milissegundo. Esse achado evidencia uma condição de corrida real na camada de persistência sob alta concorrência.
+Ao longo dos três patamares, o contador funcional \texttt{createjoy\_pending\_submissions} passou de 1 para 230 (após 1~KB), 401 (após 100~KB) e 509 (após 5~MB), como mostra a Fig.~\ref{fig:grafana_atividades}. Também ocorreram erros HTTP~500 em menor proporção: 2,75\% (7 ocorrências em 1~KB), 0,52\% (1 ocorrência em 100~KB) e 3,05\% (4 ocorrências em 5~MB). Todos retornaram a mesma mensagem de conflito de unicidade no banco quando dois usuários virtuais na mesma conta fictícia submeteram a mesma missão no mesmo milissegundo, o que indica uma condição de corrida na camada de persistência sob alta concorrência.
 
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.84\textwidth]{imagens/grafana_carga_atividades.png}
-    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o Cenário~2 (\texttt{locust\_atividades.py}, patamar de 5~MB), destacando o salto de entregas pendentes para 509, o pico de escrita em disco do container da aplicação (3,57~MB/s) e o tráfego de rede recebido (11,3~MB/s).}
+    \caption{Dashboard \textit{Observabilidade CreateJoy} durante o Cenário~2 (\texttt{locust\_atividades.py}, patamar de 5~MB), com 509 entregas pendentes, escrita de 3,57~MB/s no container da aplicação e 11,3~MB/s de tráfego recebido.}
     \label{fig:grafana_atividades}
 \end{figure*}
 
@@ -251,7 +256,7 @@ Como limitação experimental, o gerador de carga (\texttt{locust}) executou no 
 
 A arquitetura implantada integrou uma aplicação web real em ambiente isolado a uma pilha completa de observabilidade baseada em Prometheus, Grafana, cAdvisor e Node Exporter, orquestrada de forma declarativa via Docker Compose. A combinação entre o endpoint próprio de métricas do CreateJoy (\texttt{/metrics/index.php}) e os agentes de infraestrutura possibilitou correlacionar eventos funcionais, como o crescimento de 1 para 509 entregas pendentes, aos contadores de CPU, memória, disco e rede do sistema operacional.
 
-Os ensaios experimentais comprovaram que perfis de carga distintos deslocam o ponto de saturação do hospedeiro: o aumento de usuários simultâneos em consultas e compras pressionou prioritariamente CPU do banco (43,65\%) e memória da aplicação (175,87~MiB), ao passo que o envio de arquivos de 5~MB deslocou a contenção para escrita em disco (3,57~MB/s na aplicação e 6,43~MB/s no host) e largura de banda de rede virtual (11,22~MB/s). Adicionalmente, os testes revelaram uma condição de corrida real na gravação concorrente de submissões sob a mesma conta de aluno. Como trabalhos futuros concretos, propõe-se a imposição de limites explícitos de CPU e memória via \texttt{deploy.resources.limits} para avaliar \textit{throttling} e atuação do OOM Killer, o tratamento transacional do número de tentativa nas submissões do CreateJoy e a execução do Locust em um hospedeiro fisicamente separado.
+Os testes mostraram que perfis de carga distintos deslocam o gargalo do hospedeiro: o aumento de usuários simultâneos em consultas e compras pressionou mais a CPU do banco (43,65\%) e a memória da aplicação (175,87~MiB), enquanto o envio de arquivos de 5~MB concentrou a sobrecarga em escrita em disco (3,57~MB/s na aplicação e 6,43~MB/s no host) e rede virtual (11,22~MB/s). Os ensaios também expuseram uma condição de corrida na gravação concorrente de submissões sob a mesma conta de aluno. Como próximos passos, vale definir limites explícitos de CPU e memória com \texttt{deploy.resources.limits} para observar \textit{throttling} e atuação do OOM Killer, ajustar o controle transacional do número de tentativa nas submissões do CreateJoy e executar o Locust em uma máquina separada.
 
 \section{Repositório}
 
@@ -261,6 +266,7 @@ Os manifestos de orquestração (\texttt{docker-compose.yml}), a configuração 
     \item \textbf{GitHub:} \url{https://github.com/1g0rX/trabalho-pratico-sistemas-distribuidos}
 \end{itemize}
 
+\IEEEtriggeratref{5}
 \begin{thebibliography}{00}
 \bibitem{dockercompose} Docker Inc., ``Docker Compose Documentation,'' Disponível em: \url{https://docs.docker.com/compose/}.
 \bibitem{mariadb} MariaDB Foundation, ``MariaDB Server Documentation,'' Disponível em: \url{https://mariadb.com/kb/en/documentation/}.
