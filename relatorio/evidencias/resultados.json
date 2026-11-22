@@ -1,0 +1,241 @@
+{
+  "ocioso": {
+    "cpu_host_pct": 12.33,
+    "ram_host_pct": 35.47,
+    "disk_write_host_bps": 590345.3,
+    "disk_read_host_bps": 960102.4,
+    "net_rx_host_bps": 135.5,
+    "net_tx_host_bps": 3108.1,
+    "cpu_app_pct": 0.29,
+    "cpu_db_pct": 0.88,
+    "ram_app_mib": 20.26,
+    "ram_db_mib": 119.56,
+    "disk_write_app_bps": 0.0,
+    "disk_write_db_bps": 0.0,
+    "net_rx_app_bps": 542.2,
+    "net_tx_app_bps": 591.2,
+    "app_metrics": {
+      "createjoy_up": 1.0,
+      "createjoy_students_total": 2.0,
+      "createjoy_pending_submissions": 1.0,
+      "createjoy_pending_store_requests": 0.0,
+      "createjoy_metrics_generation_seconds": 0.00132
+    }
+  },
+  "alunos_10": {
+    "name": "alunos_10u",
+    "users": 10,
+    "locust": {
+      "reqs": 12,
+      "fails": 12,
+      "avg_ms": 13.0,
+      "min_ms": 13.0,
+      "max_ms": 15.0,
+      "med_ms": 59.0,
+      "rps": 110.0,
+      "p50_ms": 12.0,
+      "p95_ms": 59.0,
+      "p99_ms": 200.0
+    },
+    "peak": {
+      "cpu_host_pct": 13.63,
+      "ram_host_pct": 35.51,
+      "cpu_app_pct": 3.2,
+      "cpu_db_pct": 4.63,
+      "ram_app_mib": 39.03,
+      "ram_db_mib": 129.27,
+      "disk_write_host_bps": 2779021.7,
+      "disk_write_app_bps": 816.4,
+      "disk_write_db_bps": 1616.0,
+      "net_rx_app_bps": 216453.1,
+      "net_tx_app_bps": 234567.0,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 1.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001397
+      }
+    }
+  },
+  "alunos_50": {
+    "name": "alunos_50u",
+    "users": 50,
+    "locust": {
+      "reqs": 12,
+      "fails": 12,
+      "avg_ms": 13.0,
+      "min_ms": 13.0,
+      "max_ms": 14.0,
+      "med_ms": 25.0,
+      "rps": 1300.0,
+      "p50_ms": 12.0,
+      "p95_ms": 25.0,
+      "p99_ms": 1400.0
+    },
+    "peak": {
+      "cpu_host_pct": 16.49,
+      "ram_host_pct": 36.88,
+      "cpu_app_pct": 14.53,
+      "cpu_db_pct": 18.15,
+      "ram_app_mib": 99.75,
+      "ram_db_mib": 154.88,
+      "disk_write_host_bps": 4456736.6,
+      "disk_write_app_bps": 4450.2,
+      "disk_write_db_bps": 1660.5,
+      "net_rx_app_bps": 1099468.1,
+      "net_tx_app_bps": 1204228.3,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 1.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001147
+      }
+    }
+  },
+  "alunos_100": {
+    "name": "alunos_100u",
+    "users": 100,
+    "locust": {
+      "reqs": 12,
+      "fails": 13,
+      "avg_ms": 13.0,
+      "min_ms": 14.0,
+      "max_ms": 16.0,
+      "med_ms": 34.0,
+      "rps": 150.0,
+      "p50_ms": 12.0,
+      "p95_ms": 34.0,
+      "p99_ms": 2800.0
+    },
+    "peak": {
+      "cpu_host_pct": 24.55,
+      "ram_host_pct": 36.98,
+      "cpu_app_pct": 32.46,
+      "cpu_db_pct": 43.65,
+      "ram_app_mib": 175.87,
+      "ram_db_mib": 185.57,
+      "disk_write_host_bps": 3747411.8,
+      "disk_write_app_bps": 7569.5,
+      "disk_write_db_bps": 199.0,
+      "net_rx_app_bps": 2599984.2,
+      "net_tx_app_bps": 2847823.2,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 1.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001406
+      }
+    }
+  },
+  "ativ_1kb": {
+    "name": "atividades_1kb",
+    "users": 20,
+    "locust": {
+      "reqs": 93,
+      "fails": 130,
+      "avg_ms": 200.0,
+      "min_ms": 270.0,
+      "max_ms": 350.0,
+      "med_ms": 1500.0,
+      "rps": 3000.0,
+      "p50_ms": 93.0,
+      "p95_ms": 1500.0,
+      "p99_ms": 3300.0
+    },
+    "peak": {
+      "cpu_host_pct": 19.29,
+      "ram_host_pct": 36.78,
+      "cpu_app_pct": 19.07,
+      "cpu_db_pct": 32.26,
+      "ram_app_mib": 145.89,
+      "ram_db_mib": 232.82,
+      "disk_write_host_bps": 2959602.0,
+      "disk_write_app_bps": 18274.6,
+      "disk_write_db_bps": 11134.8,
+      "net_rx_app_bps": 1939684.2,
+      "net_tx_app_bps": 2126195.5,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 230.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001331
+      }
+    }
+  },
+  "ativ_100kb": {
+    "name": "atividades_100kb",
+    "users": 20,
+    "locust": {
+      "reqs": 72,
+      "fails": 120,
+      "avg_ms": 150.0,
+      "min_ms": 200.0,
+      "max_ms": 270.0,
+      "med_ms": 330.0,
+      "rps": 440.0,
+      "p50_ms": 72.0,
+      "p95_ms": 330.0,
+      "p99_ms": 1300.0
+    },
+    "peak": {
+      "cpu_host_pct": 15.38,
+      "ram_host_pct": 37.42,
+      "cpu_app_pct": 7.79,
+      "cpu_db_pct": 7.26,
+      "ram_app_mib": 114.23,
+      "ram_db_mib": 263.07,
+      "disk_write_host_bps": 3110856.1,
+      "disk_write_app_bps": 20332.3,
+      "disk_write_db_bps": 13199.2,
+      "net_rx_app_bps": 929141.8,
+      "net_tx_app_bps": 1144953.9,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 401.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001237
+      }
+    }
+  },
+  "ativ_5mb": {
+    "name": "atividades_5mb",
+    "users": 20,
+    "locust": {
+      "reqs": 130,
+      "fails": 190,
+      "avg_ms": 230.0,
+      "min_ms": 270.0,
+      "max_ms": 370.0,
+      "med_ms": 470.0,
+      "rps": 1900.0,
+      "p50_ms": 130.0,
+      "p95_ms": 470.0,
+      "p99_ms": 2500.0
+    },
+    "peak": {
+      "cpu_host_pct": 19.54,
+      "ram_host_pct": 37.81,
+      "cpu_app_pct": 10.8,
+      "cpu_db_pct": 6.95,
+      "ram_app_mib": 102.31,
+      "ram_db_mib": 266.01,
+      "disk_write_host_bps": 6434742.8,
+      "disk_write_app_bps": 3569568.2,
+      "disk_write_db_bps": 9380.3,
+      "net_rx_app_bps": 11222080.2,
+      "net_tx_app_bps": 1208232.2,
+      "final_app_metrics": {
+        "createjoy_up": 1.0,
+        "createjoy_students_total": 2.0,
+        "createjoy_pending_submissions": 509.0,
+        "createjoy_pending_store_requests": 7.0,
+        "createjoy_metrics_generation_seconds": 0.001338
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+NAME               IMAGE                                        COMMAND                  SERVICE         CREATED              STATUS                        PORTS
+app-educacional    trabalho-pratico-sistemas-distribuidos-app   "docker-php-entrypoi…"   app             About a minute ago   Up 28 seconds (healthy)       80/tcp, 0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+cadvisor           ghcr.io/google/cadvisor:v0.61.1              "/usr/bin/entrypoint…"   cadvisor        2 minutes ago        Up About a minute (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+db-educacional     mariadb:11.4                                 "docker-entrypoint.s…"   db              2 minutes ago        Up About a minute (healthy)   0.0.0.0:5432->3306/tcp, [::]:5432->3306/tcp
+grafana            grafana/grafana:11.3.1                       "/run.sh"                grafana         About a minute ago   Up 21 seconds                 0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+locust-load-test   locustio/locust:latest                       "locust -f /mnt/locu…"   locust          About a minute ago   Up 22 seconds                 5557/tcp, 0.0.0.0:8089->8089/tcp, [::]:8089->8089/tcp
+node-exporter      prom/node-exporter:v1.8.2                    "/bin/node_exporter …"   node-exporter   2 minutes ago        Up About a minute             0.0.0.0:9100->9100/tcp, [::]:9100->9100/tcp
+prometheus         prom/prometheus:v2.55.1                      "/bin/prometheus --c…"   prometheus      About a minute ago   Up 22 seconds                 0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
